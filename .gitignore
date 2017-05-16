@@ -61,3 +61,10 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+*.MF
+target/classes/META-INF/maven/APTED-wrapper/APTED-wrapper/pom.properties
+target/classes/META-INF/maven/APTED-wrapper/APTED-wrapper/pom.xml
+.project
+.settings/org.eclipse.m2e.core.prefs
+.settings/org.eclipse.jdt.core.prefs
+.classpath
