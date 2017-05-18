@@ -1,8 +1,6 @@
 package treevirt;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -16,6 +14,18 @@ import parser.InputParser;
 public class Main {
 
 	public static void main(String[] args) {
+		virtualizeJSON();
+		virtualizeKV();
+	}
+	
+	private static void virtualizeKV() {
+		KVFeeder feeder = new KVFeeder("KVs.txt");
+		KVVirtualizer virtualizer = new KVVirtualizer();
+		
+	}
+
+	private static void virtualizeJSON(){
+		
 		JsonFeeder feeder = new JsonFeeder("example.json");
 		APTED<StringUnitCostModel, StringNodeData> apted = new APTED<StringUnitCostModel, StringNodeData>(new StringUnitCostModel());
 		InputParser<StringNodeData> parser = new BracketStringInputParser();
@@ -31,19 +41,10 @@ public class Main {
 			if (primo == null)
 				primo = parser.fromString(tree.toBracketNotation());
 			secondo = parser.fromString(tree.toBracketNotation());
-		}
-		
-		float distance = apted.computeEditDistance(primo, secondo);
-		LinkedList<int[]> mapped = apted.computeEditMapping();
-		System.out.println(distance);
-		for (int[] is : mapped) {
-				System.out.println("\n");
-				for (int i : is) {
-					System.out.print(i + " ");
-				}
-		}
+			float distance = apted.computeEditDistance(primo, secondo);
+			System.out.println(distance);
 
-
+		}
 	}
 
 }

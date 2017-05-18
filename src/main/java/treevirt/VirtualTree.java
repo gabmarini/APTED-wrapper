@@ -91,16 +91,8 @@ public class VirtualTree {
 	@Override
 	public String toString() {
 		
-		String res = "";
-		try {
-			res = new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return res;
-		/*return "VirtualTree [label=" + label + ", value=" + value + ", fullLabel=" + fullLabel + ", dbms=" + dbms
-				+ ", children=" + children + "]";*/
+		return "VirtualTree [label=" + label + ", value=" + value + ", fullLabel=" + fullLabel + ", dbms=" + dbms
+				+ ", children=" + children + "]";
 	}
 	
 	public String toBracketNotation(){
