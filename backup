@@ -1,0 +1,261 @@
+package quepa.collector.treevirt;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import quepa.model.ResultSearch;
+
+/*
+ * Testare con oggetti innestati
+ */
+public class DocumentVirtualizer implements TreeVirtualizer {
+	
+	private ObjectMapper jsonMapper = new ObjectMapper();
+
+	
+	public DocumentVirtualizer() {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public VirtualTree virtualize(ResultSearch record) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<VirtualTree> virtualize(List<ResultSearch> records) {
+		
+		List<VirtualTree> trees = new LinkedList<>();
+		
+		for (ResultSearch result : records) {
+			
+			VirtualTree tree = new VirtualTree("root", null, "root");
+			try {
+				
+				String parsedResult = this.jsonMapper.writeValueAsString(result.getOriginal().getContent());
+				JsonNode node = this.jsonMapper.readValue(parsedResult, new TypeReference<JsonNode>() {});
+				virtualize(node, tree);
+				trees.add(tree);
+
+			} catch (JsonParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+
+		}
+		
+		return trees;
+		
+	}
+
+	/*
+	 * recursive function.
+	 */
+	private void virtualize(JsonNode node, VirtualTree tree){
+
+		Iterator<String> fieldNames = node.fieldNames();
+		while(fieldNames.hasNext()){
+
+			String fieldName = fieldNames.next();
+			JsonNode fieldValue = node.get(fieldName);
+
+			if (fieldValue.isObject()) {
+
+				VirtualTree child = new VirtualTree(fieldName, fieldName, tree.getLabel() + "." + fieldName);
+				tree.addChild(child);
+				virtualize(fieldValue, child);
+
+			} else if (fieldValue.isArray()){
+
+				List<String> arrayContent = new LinkedList<>();
+				VirtualTree arrayPlaceholder = null;
+				int counter = 0;
+				for (JsonNode innerNode : fieldValue) {
+					if(innerNode.isObject()){
+						if(arrayPlaceholder == null){
+							arrayPlaceholder = new VirtualTree(fieldName + "_array", null, tree.getLabel() + "." + fieldName);
+							tree.addChild(arrayPlaceholder);
+						}
+						VirtualTree child = new VirtualTree("root", null, tree.getLabel() + "." + fieldName + "." + counter);
+						arrayPlaceholder.addChild(child);
+						virtualize(innerNode, child);
+						counter++;
+
+					} else {
+						arrayContent.add(innerNode.asText());
+					}
+					
+				}
+
+				arrayContent.sort(null);
+				tree.addChild(new VirtualTree(fieldName, arrayContent.toString(), tree.getLabel() + "." + fieldName));
+
+			}
+			else {
+				tree.addChild(new VirtualTree(fieldName, fieldValue.asText(), tree.getLabel() + "." + fieldName));
+			}
+		}
+	}
+	
+
+}
+
+
+
+
+
+
+
+package quepa.collector.treevirt;
+
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
+
+//TODO vedere se levale l'inizializzazione della lista dei figli in automatico quando un nodo viene creato
+public class VirtualTree implements Serializable{
+	
+	private String label;
+	private String value;
+	private String fullLabel;
+	private List<VirtualTree> children;
+	
+
+	public VirtualTree() {
+		this.children = new LinkedList<>();
+	}
+
+
+	public VirtualTree(String label, String value, List<VirtualTree> children) {
+		this.label = label;
+		this.value = value;
+		this.children = children;
+	}
+
+
+	public VirtualTree(String string, String value) {
+		this.label = label;
+		this.value = value;
+		this.children = new LinkedList<>();
+	}
+
+	public VirtualTree(String label, String value, String fullLabel) {
+		this.label = label;
+		this.value = value;
+		this.fullLabel = fullLabel;
+		this.children = new LinkedList<>();
+	}
+
+
+	public String getLabel() {
+		return label;
+	}
+
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+
+	public Object getValue() {
+		return value;
+	}
+
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+
+	public List<VirtualTree> getChildren() {
+		return children;
+	}
+
+
+	public void setChildren(List<VirtualTree> children) {
+		this.children = children;
+	}
+	
+	public String getFullLabel() {
+		return fullLabel;
+	}
+	
+	public void setFullLabel(String fullLabel) {
+		this.fullLabel = fullLabel;
+	}
+	
+	public void addChild(VirtualTree node){
+		this.children.add(node);
+	}
+
+
+	@Override
+	public String toString() {
+		return "VirtualTree {label=" + label + ", value=" + value + ", fullLabel=" + fullLabel + ", children="
+				+ children + "}";
+	}
+	
+	
+	
+
+}
+
+
+
+package quepa.collector.treevirt.test;
+
+import java.util.List;
+import java.util.Map;
+
+
+import quepa.QUEPA;
+import quepa.collector.treevirt.DocumentVirtualizer;
+import quepa.collector.treevirt.VirtualTree;
+import quepa.connectors.StoreConnector;
+
+public class VirtualizersTest {
+	
+	private static Map<String, StoreConnector> stores = QUEPA.getInstance().getPolystore().getStores();
+	private static StoreConnector connector = stores.get("songs"); //brutto accedere al connettore mediante il nome della collezione
+
+	public static void main(String[] args) {
+		DocumentVirtualizer virtualizer = new DocumentVirtualizer();
+		List<VirtualTree> result = virtualizer.virtualize(connector.executeQueryWithLimitOffset("{}", 10, 0).getResults());
+		for (VirtualTree virtualTree : result) {
+			System.out.println(virtualTree);
+		}
+	}
+
+}
+
+
+
+package quepa.collector.treevirt;
+
+import java.util.List;
+
+import quepa.model.ResultSearch;
+
+public interface TreeVirtualizer {
+	
+	public VirtualTree virtualize(ResultSearch record);
+	
+	public List<VirtualTree> virtualize(List<ResultSearch> records);
+
+}

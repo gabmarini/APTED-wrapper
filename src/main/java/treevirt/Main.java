@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import costmodel.StringUnitCostModel;
 import distance.APTED;
+import model.VirtualTree;
 import node.Node;
 import node.StringNodeData;
 import parser.BracketStringInputParser;
@@ -19,8 +20,7 @@ public class Main {
 	}
 	
 	private static void virtualizeKV() {
-		KVFeeder feeder = new KVFeeder("KVs.txt");
-		KVVirtualizer virtualizer = new KVVirtualizer();
+		virtualizeJSON();
 		
 	}
 
@@ -39,8 +39,8 @@ public class Main {
 
 			VirtualTree tree = virtualizer.virtualize(node);
 			if (primo == null)
-				primo = parser.fromString(tree.toBracketNotation());
-			secondo = parser.fromString(tree.toBracketNotation());
+				primo = parser.fromString("{a{{b}{c}}}");
+			secondo = parser.fromString("{a{{c}{b}}}");
 			float distance = apted.computeEditDistance(primo, secondo);
 			System.out.println(distance);
 

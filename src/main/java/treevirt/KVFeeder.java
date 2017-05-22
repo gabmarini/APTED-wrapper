@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public class KVFeeder {
 
-	Map<String, String> records = new HashMap<String, String>();
+	Map<String, Object> records = new HashMap<String, Object>();
 
 	public KVFeeder(String path) {
 		try (Stream<String> stream = Files.lines(Paths.get(path))) {
@@ -23,7 +23,7 @@ public class KVFeeder {
 		}
 	}
 	
-	public Map<String, String> getRecords() {
+	public Map<String, Object> getRecords() {
 		return records;
 	}
 	

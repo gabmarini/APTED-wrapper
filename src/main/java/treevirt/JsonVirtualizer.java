@@ -4,6 +4,8 @@ import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import model.VirtualTree;
+
 public class JsonVirtualizer {
 
 	public VirtualTree virtualize(JsonNode node){

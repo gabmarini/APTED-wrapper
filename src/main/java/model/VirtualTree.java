@@ -1,4 +1,4 @@
-package treevirt;
+package model;
 
 import java.util.Comparator;
 import java.util.LinkedList;
