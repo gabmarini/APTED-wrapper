@@ -1,6 +1,6 @@
 package treevirt;
 
-import java.io.IOException;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -20,8 +20,9 @@ public class Main {
 	}
 	
 	private static void virtualizeKV() {
-		virtualizeJSON();
-		
+		KVFeeder feeder = new KVFeeder("KVs.txt");
+		Map<String, Object> records = feeder.getRecords();
+		KVVirtualizer virtualizer = new KVVirtualizer();
 	}
 
 	private static void virtualizeJSON(){
